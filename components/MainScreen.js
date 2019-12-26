@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Dimensions } from 'react-native';
 import { Layout, Text, ViewPager, ApplicationProvider, Button, Radio , RadioGroup, Spinner } from 'react-native-ui-kitten';
-import { mapping, dark as theme } from '@eva-design/eva';
+import { mapping, light as theme } from '@eva-design/eva';
 import {LineChart} from 'react-native-chart-kit';
 import { ScrollView } from 'react-native-gesture-handler';
 export class MainScreen extends React.Component {
@@ -42,7 +42,7 @@ export class MainScreen extends React.Component {
     };
     dataGet(){
       this.setState({loading:true})
-      let url ='https://courseappshop.herokuapp.com/api/v1/data'
+      let url ='https://courseappdinner.herokuapp.com/api/v1/data'
       fetch(url,{method:'GET'})
     .then(response => response.json())  
     .then((data) => {
@@ -63,7 +63,7 @@ export class MainScreen extends React.Component {
     })
     }
     async shoppingPost() {
-      let url ='https://courseappshop.herokuapp.com/api/v1/data'
+      let url ='https://courseappdinner.herokuapp.com/api/v1/data'
       let response = await fetch(url, {
         method:'POST',
         headers: {
@@ -72,9 +72,9 @@ export class MainScreen extends React.Component {
         body: JSON.stringify({  name:"vova",
                                 time:{
                                   "day":new Date().getDate(),
-                                  "month":new Date().getMonth()
-                                },
-                                amount:1
+                                  "hour":new Date().getMonth(),
+                                  "minute":new Date().getMinutes()
+                                }
                               })
                             })
                               .then(response => {
@@ -91,7 +91,7 @@ export class MainScreen extends React.Component {
                             })  
                             .then(function(data) {
                               //this.setState({breakfast:true})  
-                              alert("Вы успешно сходили в магазин!")
+                              alert("Вы успешно позавтракали!")
                               
                             }).catch(error => {  
                                 alert(error)  
@@ -124,9 +124,9 @@ export class MainScreen extends React.Component {
     width={Dimensions.get("window").width} // from react-native
     height={220}
     chartConfig={{
-      backgroundColor: "#2b0345",
-      backgroundGradientFrom: "#2b0345",
-      backgroundGradientTo: "#2b034a",
+      backgroundColor: "#008cf7",
+      backgroundGradientFrom: "#008cf7",
+      backgroundGradientTo: "#008cf7",
       decimalPlaces: 2, // optional, defaults to 2dp
       color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
       labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
@@ -159,9 +159,9 @@ export class MainScreen extends React.Component {
     width={Dimensions.get("window").width} // from react-native
     height={220}
     chartConfig={{
-      backgroundColor: "#2b0345",
-      backgroundGradientFrom: "#2b0345",
-      backgroundGradientTo: "#2b034a",
+      backgroundColor: "#008cf7",
+      backgroundGradientFrom: "#008cf7",
+      backgroundGradientTo: "#008cf7",
       decimalPlaces: 2, // optional, defaults to 2dp
       color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
       labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
@@ -204,7 +204,7 @@ export class MainScreen extends React.Component {
               <Layout style={styles.contentContainer}>
                 <Button onPress={this.goShopping}
                   >
-                  Сходить в магазин
+                  Позавтракать
                 </Button>
               </Layout>
               <Layout style={styles.contentContainer}
