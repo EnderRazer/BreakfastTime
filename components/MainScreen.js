@@ -1,24 +1,28 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { Layout, Text, ViewPager, ApplicationProvider, Button, Radio , RadioGroup, Spinner } from 'react-native-ui-kitten';
 import { mapping, dark as theme } from '@eva-design/eva';
+import {LineChart} from 'react-native-chart-kit';
+import { ScrollView } from 'react-native-gesture-handler';
 export class MainScreen extends React.Component {
-  constructor(props){
-    super(props)
-  }
     static navigationOptions = {
         header: null
     };
     state = {
-       selectedIndex: 1,
-       username: this.props.navigation.state.params.username,
-       selectedRadioIndex: 0,
-       breakfast:false,
-       dataCount:7,
-       loading:false,
-       loadingStart:false,
-     };
-  
+      selectedIndex: 1,
+      username: "Vova",
+      selectedRadioIndex: 0,
+      breakfast:false,
+      havingBreakfast:false,
+      dataCount:7,
+      loaded:false,
+      loading:false,
+      abcis:[],
+      dataAppCoef:[],
+      dataDetCoef:[],
+      minApp:0,
+      minDet:0
+    };
     onIndexChange = (selectedIndex) => {
       this.setState({ selectedIndex: selectedIndex });
     };
@@ -36,20 +40,156 @@ export class MainScreen extends React.Component {
           break
       }
     };
-    haveBreakfast = () => {
-      this.setState({breakfast:true})
+    dataGet(){
+      this.setState({loading:true})
+      let url ='https://courseappshop.herokuapp.com/api/v1/data'
+      fetch(url,{method:'GET'})
+    .then(response => response.json())  
+    .then((data) => {
+      if(data!=null){
+        
+        //alert("супер "+ JSON.stringify(data))
+        this.setState({abcis:data.abscises})
+        this.setState({dataAppCoef:data.approximate_cof})
+        this.setState({dataDetCoef:data.detalisation_cof})
+        //alert(JSON.stringify(this.state.data))
+        
+        this.setState({loading:false})
+        this.setState({loaded:true})
+      }
+      return data
+    }).catch(error => {  
+        alert("Ошибка: "+error)  
+    })
+    }
+    async shoppingPost() {
+      let url ='https://courseappshop.herokuapp.com/api/v1/data'
+      let response = await fetch(url, {
+        method:'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({  name:"vova",
+                                time:{
+                                  "day":new Date().getDate(),
+                                  "month":new Date().getMonth()
+                                },
+                                amount:1
+                              })
+                            })
+                              .then(response => {
+                                if (response.status >= 200 && response.status < 300) {  
+                                    //alert("Заебумба")
+                                    return Promise.resolve(response)  
+                                } else {  
+                                    alert("Не заебумба")
+                                    return Promise.reject(response)  
+                                }  
+                            })  
+                            .then(response => {
+                                return response.text()
+                            })  
+                            .then(function(data) {
+                              //this.setState({breakfast:true})  
+                              alert("Вы успешно сходили в магазин!")
+                              
+                            }).catch(error => {  
+                                alert(error)  
+                            })
+    }
+    goShopping = () =>{
+      this.shoppingPost()
     }
     renderLoading = () => (
-      <Layout style={styles.loading} size='giant' status='danger'>
-        <Spinner/>
+      <Layout style={styles.loading}>
+        <Spinner size='giant' status='danger'/>
       </Layout>
-    );
+    )
+    renderChart = () => (
+      <Layout style={styles.loading}>
+      {
+      this.state.loaded ? (
+        <Layout style={styles.loading}>
+          <ScrollView>
+          <Layout style={styles.chart}>
+          <LineChart
+    data={{
+      labels: ["December"],
+      datasets: [
+        {
+          data: this.state.dataAppCoef
+        }
+      ]
+    }}
+    width={Dimensions.get("window").width} // from react-native
+    height={220}
+    chartConfig={{
+      backgroundColor: "#2b0345",
+      backgroundGradientFrom: "#2b0345",
+      backgroundGradientTo: "#2b034a",
+      decimalPlaces: 2, // optional, defaults to 2dp
+      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      style: {
+        borderRadius: 16
+      },
+      propsForDots: {
+        r: "0",
+        strokeWidth: "0",
+        stroke: "#ffa726"
+      }
+    }}
+    bezier
+    style={{
+      marginVertical: 8,
+      borderRadius: 16
+    }}
+  />
+          </Layout>
+          <Layout style={styles.chart}>
+          <LineChart
+    data={{
+      labels: ["December"],
+      datasets: [
+        {
+          data: this.state.dataDetCoef
+        }
+      ]
+    }}
+    width={Dimensions.get("window").width} // from react-native
+    height={220}
+    chartConfig={{
+      backgroundColor: "#2b0345",
+      backgroundGradientFrom: "#2b0345",
+      backgroundGradientTo: "#2b034a",
+      decimalPlaces: 2, // optional, defaults to 2dp
+      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+      style: {
+        borderRadius: 16
+      },
+      propsForDots: {
+        r: "0",
+        strokeWidth: "0",
+        stroke: "#ffa726"
+      }
+    }}
+    bezier
+    style={{
+      marginVertical: 8,
+      borderRadius: 16
+    }}
+  />
+          </Layout>
+            
+          </ScrollView>
+        </Layout>) : null
+      }
+      </Layout>
+    )
     displayData = () => {
-      this.setState({loadingStart:true})
-      alert(this.state.loadingStart) 
-    }
-    timeout = () => {
-      this.setState({loading:false})
+      let result = this.dataGet()
+      
     }
     render(){
       return (
@@ -59,41 +199,23 @@ export class MainScreen extends React.Component {
               onSelect={this.onIndexChange}
               style={styles.container}>
               <Layout style={styles.contentContainer}>
-                <Text style={styles.text}>Здарова, {this.state.username}</Text>
-                <Button 
-                    onPress={this.onButtonPress}>
-                    Sign Out
-                </Button>
+
               </Layout>
               <Layout style={styles.contentContainer}>
-                {
-                  this.state.breakfast ? (
-                    <Text>Вы уже завтракали сегодня</Text>
-                  ) : (
-                    <Text>Вы еще не завтракали сегодня</Text>
-                  )
-                }
-                <Button onPress={this.haveBreakfast}
-                  disabled={this.state.breakfast}>
-                  Позавтракать
+                <Button onPress={this.goShopping}
+                  >
+                  Сходить в магазин
                 </Button>
               </Layout>
               <Layout style={styles.contentContainer}
                 >
-                <Text style={styles.text}>Вывести график</Text>
-                <RadioGroup
-                  selectedIndex={this.state.selectedRadioIndex}
-                  onChange={this.onGroupSelectionChange}
-                  style={styles.radioGroup}>
-                  <Radio text='За неделю' style={styles.radio}/>
-                  <Radio text='За месяц'/>
-                </RadioGroup>
+                <Text style={styles.text}>Вывести графики</Text>
                 <Button onPress={this.displayData}>
-                  Показать график
+                  Показать графики
                 </Button>
                 <Layout style={styles.container}>
                 {
-                  this.state.loadingStart ? this.renderLoading() : null 
+                  this.state.loading ? this.renderLoading() : this.renderChart()
                 }
                 </Layout>
               </Layout>
@@ -104,16 +226,14 @@ export class MainScreen extends React.Component {
     
   }
     const styles = StyleSheet.create({
-    radioGroup:{
-      marginBottom:15
-    },
-    radio:{
-      marginBottom:10
-    },
+      chart:{
+        marginTop:10
+      },
     loading: {
-      flex: 1,
+      marginTop:10,
       justifyContent: 'center',
       alignItems: 'center',
+      width:300
     },
     container: {
       flex: 1,
